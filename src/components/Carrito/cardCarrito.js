@@ -6,109 +6,95 @@ import { Shadow } from "react-native-shadow-2";
 import { DataContext } from "../../context/DataProvider";
 import Button from "../Button/Button";
 import { database } from "../../utils/Firebase";
-// import {
-//   collection,
-//   addDoc,
-//   deleteDoc,
-//   doc,
-//   updateDoc,
-//   deleteField,
-//   getDocs,
-//   delete,
-//   Firestore,
-// } from "firebase/firestore";
-import firestore from "@react-native-firebase/firestore";
-import { QuerySnapshot } from "firebase/firestore";
-
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+} from "firebase/firestore";
 export default function CardCarrito() {
   const value = useContext(DataContext);
-  const [carrito, setCarrito] = value.carrito;
-  const [total] = value.total;
-  const [dataCarrito, setDataCarrito] = useState([]);
-  //obtener los datos que están en la base de datos de firebase
-  // useEffect(() => {
-  //   const obtenerDatos = async () => {
-  //     const datos = await getDocs(collection(database, "productos"));
-  //     datos.forEach((documento) => {
-  //       console.log(documento.data());
-  //     });
-  //   };
-  //   obtenerDatos();
-  // }, []);
-  const loadingData = () => {
-    const suscriber = firestore()
-      .collection("productos")
-      .onSnapshot((QuerySnapshot) => {
-        const product = [];
-        QuerySnapshot.forEach((documentSnapshot) => {
-          product.push({
-            ...documentSnapshot.data(),
-            key: documentSnapshot.id,
-          });
-        });
-        setDataCarrito(suscriber);
-      });
-    return suscriber;
-  };
-  useEffect(() => {
-    loadingData();
-  }, []);
-  const removeProducto = (id) => {
-    carrito.forEach((item, index) => {
-      if (item.id === id) {
-        item.cantidad = 1;
-        carrito.splice(index, 1);
-      }
-    });
-    setCarrito([...carrito]);
-  };
-  const removeProductoAlert = (id, name) => {
-    Alert.alert(`Eliminar ${name}`, "¿Quieres eliminar este producto?", [
-      {
-        text: "Cancel",
-      },
-      {
-        text: "OK",
-        onPress: () => {
-          firestore()
-            .collection("productos")
-            .doc(id)
-            .delete()
-            .then(() => {
-              console.log("producto eliminado");
-            });
-          // removeProducto(id);
-          // await updateDoc(productsRef, {
-          //   id: deleteField(),
-          //   img: deleteField(),
-          //   marca: deleteField(),
-          //   name: deleteField(),
-          //   price: deleteField(),
-          // });
-        },
-      },
-    ]);
-  };
-  const BuyProduct = async () => {
-    await addDoc(collection(database, "productos"), {
-      ...carrito,
-    });
+  const carrito = value.carrito;
+  const setCarrito = value.setCarrito
+  const total = value.total;
+  const stepCount = value.setCount;
+  const itemCount = value.count
+  const [product, setProduct] = useState([]);
+ 
+  // const removeProductoAlert = (id, name) => {
+  //   Alert.alert(`Eliminar ${name}`, "¿Quieres eliminar este producto?", [
+  //     {
+  //       text: "Cancel",
+  //     },
+  //     {
+  //       text: "OK",
+  //       onPress: () => {
+  //         removeProducto(id);
+  //         // firestore()
+  //         //   .collection("productos")
+  //         //   .doc(id)
+  //         //   .delete()
+  //         //   .then(() => {
+  //         //     console.log("producto eliminado");
+  //         //   });
+  //         // removeProducto(id);
+  //         // await updateDoc(productsRef, {
+  //         //   id: deleteField(),
+  //         //   img: deleteField(),
+  //         //   marca: deleteField(),
+  //         //   name: deleteField(),
+  //         //   price: deleteField(),
+  //         // });
+  //       },
+  //     },
+  //   ]);
+  // };
+  const BuyProduct = () => {
     Alert.alert("Su compra ha sido realizada", "");
   };
+
+  const deleteItem = async (item,key) =>{
+    const itemRef = doc(database,'product',item)
+    await deleteDoc(itemRef)
+    carrito.forEach((item,index) => {
+      if(item.key === key) {
+        item.key = 1;
+        carrito.splice(index,1)
+        stepCount(itemCount - 1)
+      }
+    })
+    setCarrito([...carrito]);
+    setProduct([])
+  }
+  const getItems = async () =>{
+    const collectionRef = collection(database, "product");
+    const q = query(collectionRef);
+    const result = await getDocs(q)
+    
+    const listItem = result.docs.map((doc) => ({...doc.data(),key:doc.id}))
+
+    setProduct(listItem)
+  }
+
+  useEffect(() => {
+    getItems()
+  }, []);
+
   return (
     <>
-      {dataCarrito.length === 0 ? (
-        <Text>Carrito Vacío</Text>
+      {product.length === 0 ? (
+        <Text> Carrito Vacío </Text>
       ) : (
         <>
-          {dataCarrito.map((producto) => (
+          {product.map((producto) => (
             <View style={styled.content} key={producto.id}>
               <Shadow distance={4} startColor={"#00000010"} radius={8}>
                 <View style={styled.contentCard}>
                   <Image source={producto.img} style={styled.image} />
                   <View style={styled.contentText}>
-                    <Text style={styled.txtNameShoes}>{producto.name}</Text>
-                    <Text style={styled.textShoes}>C$ {producto.price}</Text>
+                    <Text style={styled.txtNameShoes}> {producto.name} </Text>
+                    <Text style={styled.textShoes}> C$ {producto.price} </Text>
                   </View>
                   <Text style={styled.icon}>
                     <Icon
@@ -116,7 +102,7 @@ export default function CardCarrito() {
                       color="#000"
                       size={30}
                       onPress={() =>
-                        removeProductoAlert(producto.id, producto.name)
+                        deleteItem(producto.key)
                       }
                     />
                   </Text>
@@ -127,8 +113,24 @@ export default function CardCarrito() {
         </>
       )}
       <View style={styled.contentTotal}>
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>Total : </Text>
-        <Text style={{ fontSize: 20, color: "#A4A4A4" }}>C$ {total}</Text>
+        <Text
+          style={{
+            fontSize: 20,
+            fontWeight: "bold",
+          }}
+        >
+          
+          Total:
+        </Text>
+        <Text
+          style={{
+            fontSize: 20,
+            color: "#A4A4A4",
+          }}
+        >
+          
+          C$ {total}
+        </Text>
       </View>
       <Button nameBtn="Comprar" onPress={() => BuyProduct()} />
     </>

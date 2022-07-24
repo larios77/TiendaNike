@@ -8,6 +8,20 @@ import { styled } from "./style";
 const CardProducts = ({ imgProducts, brand, shoeName, price, id }) => {
   const value = useContext(DataContext);
   const addCarrito = value.addCarrito;
+
+  const addProduct = () => {
+
+    const dataSent = {
+      id: id,
+      img: imgProducts,
+      marca: brand,
+      name: shoeName,
+      price: price,
+    }
+    addCarrito(dataSent)
+  }
+
+
   return (
     <View style={styled.containerCard}>
       <Shadow distance={4} startColor={"#00000010"} radius={6}>
@@ -22,7 +36,7 @@ const CardProducts = ({ imgProducts, brand, shoeName, price, id }) => {
         <Button
           nameBtn="Añadir al carrito"
           id={id}
-          onPress={() => addCarrito(id)}
+          onPress={addProduct}
         />
       </Shadow>
     </View>

@@ -7,11 +7,14 @@ import { StatusBar } from "expo-status-bar";
 import { DataContext } from "../../context/DataProvider";
 import Footer from "../../components/Footer/footer";
 import { styled } from "./Styles";
+// Import Product
+import {product} from '../../common/ProductosItem'
+
 
 const Productos = ({ navigation }) => {
   const value = useContext(DataContext);
-  const [productos] = value.productos;
-  const [carrito] = value.carrito;
+  const stepCount = value.count;
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerLeft: () => <Icon name="arrow-left" color="#000" />,
@@ -25,12 +28,12 @@ const Productos = ({ navigation }) => {
             onPress={() => navigation.navigate("Carrito")}
           />
           <View style={styled.counter}>
-            <Text style={styled.textCounter}>{carrito.length}</Text>
+            <Text style={styled.textCounter}>{stepCount}</Text>
           </View>
         </View>
       ),
     });
-  }, [navigation, carrito]);
+  }, [navigation, stepCount]);
   return (
     <SafeAreaView style={styled.safeAreaView}>
       <ScrollView style={styled.container}>
@@ -39,7 +42,7 @@ const Productos = ({ navigation }) => {
           <Image source={imgProducto} style={styled.image} />
         </View>
         <View style={styled.flatList}>
-          {productos.map((item) => (
+          {product.map((item) => (
             <CardProducts
               key={item.id}
               id={item.id}

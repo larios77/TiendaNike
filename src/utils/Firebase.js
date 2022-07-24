@@ -3,12 +3,13 @@ import { getFirestore } from "firebase/firestore";
 import Constants from "expo-constants";
 
 const firebaseConfig = {
-  apiKey: Constants.manifest.extra.apiKey,
-  authDomain: Constants.manifest.extra.authDomain,
-  projectId: Constants.manifest.extra.projectId,
-  storageBucket: Constants.manifest.extra.storageBucket,
-  messagingSenderId: Constants.manifest.extra.messagingSenderId,
-  appId: Constants.manifest.extra.appId,
+  apiKey: "AIzaSyCTKxq25tMLnArN9WuwB1knaq50HgbjA70",
+  authDomain: "prueba-f5ab4.firebaseapp.com",
+  projectId: "prueba-f5ab4",
+  storageBucket: "prueba-f5ab4.appspot.com",
+  messagingSenderId: "5320119455",
+  appId: "1:5320119455:web:2cca55fadf73b8f388beaa",
+  measurementId: "G-PFNY0FFYXM"
 };
 
 initializeApp(firebaseConfig);
